@@ -89,13 +89,26 @@ const main = () => {
   }
 
   fs.mkdirSync(OUTDIR, { recursive: true });
+
+  // 檔頭宣告：沒有 <樹> 就沒有目錄樹（accelon26 左欄會是空的）
+  const head = [
+    '<檔 n="komyoji"><集>光明寺日譯</集></檔>',
+    '<隱><樹 s="*" t="區,書,塊">目錄</樹></隱>',
+  ].join('\n');
+  fs.writeFileSync(path.join(OUTDIR, '00.xml'), head + '\n');
+
   let files = 0;
   let lines = 0;
-  for (const [book, segs] of [...byBook].sort()) {
+  let lastArea = '';
+  for (const [book, segs] of [...byBook].sort((a, b) => canonOrder(a[0], b[0]))) {
     if (ONLY && book !== ONLY) continue;
     const area = Object.keys(AREA).find((a) => AREA[a].includes(book)) || 'kn';
     const out = [];
-    out.push(`<區 id="${area}" t="書.">${esc(areaLabel(area))}</區>`);
+    // 每個部類只宣告一次 <區>，否則目錄樹會出現 33 個重複的「長部／長部／長部」
+    if (area !== lastArea) {
+      out.push(`<區 id="${area}" t="書.">${esc(areaLabel(area))}</區>`);
+      lastArea = area;
+    }
     out.push(`<書 id="${book}" t="塊.">${esc(bookTitle.get(book) || book)}</書>`);
     let curBlock = '';
     // 段要照 canon 順序：塊依它第一次出現的 cs 行號排，段依號碼排
@@ -109,7 +122,7 @@ const main = () => {
     }
     for (const [block, b] of [...byBlock].sort((x, y) => x[1].min - y[1].min)) {
       if (block !== curBlock) {
-        out.push(`<塊 id="${block}" t="段.">${esc(blockTitle.get(block) || block)}</塊>`);
+        out.push(`<塊 id="${block}">${esc(blockTitle.get(block) || block)}</塊>`);
         curBlock = block;
       }
       for (const s of b.items.sort((x, y) => segNum(x.seg) - segNum(y.seg))) {
@@ -129,5 +142,16 @@ const main = () => {
 
 const segNum = (s) => Number(String(s).split('.')[1] ?? s) || 0;
 const areaLabel = (a) => ({ dn: '【長部】', mn: '【中部】', sn: '【相應部】', an: '【增支部】', kn: '【小部】' }[a] || a);
+
+/** 書的 canon 順序（和 pack.ts 一致；<區> 只宣告在每部類的第一本） */
+const CANON_RANK = ['dn', 'mn', 'sn', 'an', 'kn', 'kp', 'dhp', 'ud', 'iti', 'snp', 'thag', 'thig', 'ja', 'cp', 'bv', 'pv', 'vv', 'mil', 'cnd', 'ne', 'ps'];
+const canonOrder = (a, b) => {
+  const ak = a.replace(/\d+$/, '');
+  const bk = b.replace(/\d+$/, '');
+  const ai = CANON_RANK.indexOf(ak);
+  const bi = CANON_RANK.indexOf(bk);
+  if (ai !== bi) return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  return (Number(a.match(/\d+$/)?.[0] ?? 0) || 0) - (Number(b.match(/\d+$/)?.[0] ?? 0) || 0);
+};
 
 main();

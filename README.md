@@ -46,8 +46,9 @@ node src/crawl.mjs --out data/html            # 抓網站（需 VPN；或 GitHub
 node src/extract-grammar.mjs --out out/grammar # 抽逐詞文法 → sentences/tokens.tsv.gz
 node src/export-pos.mjs                        # 給 sz 的 pos-distribution／pos-map／coverage
 node src/align-cs.mjs --out out/align.tsv      # 對 cs 的 塊.段（讀 D:\2026\sz\data\cs）
-node src/make-xml.mjs --out out/komyoji-xml    # 產生書 XML
+node src/make-xml.mjs --out out/komyoji-xml    # 產生 00.xml（目錄樹）＋書 XML
 bun run src/pack.ts                            # 打包 → D:\accelon3\komyoji.adb
+bun run src/toc-check.ts                       # 目錄樹檢查（5 區／33 書／381 塊）
 ```
 
 ## 開工前先讀

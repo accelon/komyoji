@@ -50,16 +50,21 @@ D:\accelon3\komyoji.adb    33 書、156,115 行、3.29 MiB
 ```
 
 - 正文：`<區>`→`<書>`→`<塊>`→`<段 n>`，每行＝一句日譯。
+- **目錄樹**：`00.xml` 宣告 `<隱><樹 s="*" t="區,書,塊">目錄</樹></隱>`，
+  打出來的樹是 **5 區 → 33 書 → 381 塊**（和 cs 的 9 區／238 書／2976 塊同一個形狀）。
+  兩個坑：`<區>` 只能在每部類的第一本書宣告一次（每本都宣告會出現「長部、長部、長部」），
+  `<塊>` 不能帶 `t="段."`（否則段會變成目錄的第四層）。
 - 133,642 句有日譯且有對上；4,620 句沒日譯，暫時不進正文。
 - 段內的行數就是「句」；和 cs 的句數可能不同（我們的句子切得比較細），
   跨庫只用 `塊.段`，`:句` 只在同一庫內有意義（見 sz `docs/addressing.md`）。
 
-解析驗證（`bun run out/addr-check.mjs`）：
+解析驗證（`bun run out/addr-check.mjs`、`bun run src/toc-check.ts`）：
 
 ```text
-d1.1 → 42      d1.28 → 3836    d1.28:2 → 3840
-d2.150 → 36099 m1.5 → 1354796  a6.7 → 3538238
-s1.1 → 1847616 s45.1 → 2894234      8/8 成功
+目錄：節點 419（L1=5 L2=33 L3=381），沒有名字的節點 0
+d1.1 → 81      d1.28 → 3875    d1.28:2 → 3879
+d2.150 → 36138 m1.5 → 1354787  a6.7 → 3538112
+s1.1 → 1847594 s45.1 → 2894173      8/8 成功
 ```
 
 ## 5. 重跑
@@ -67,8 +72,9 @@ s1.1 → 1847616 s45.1 → 2894234      8/8 成功
 ```powershell
 cd D:\2026\komyoji
 node src/align-cs.mjs --grammar out/grammar --out out/align.tsv   # 對位（約 10 秒，讀 D:\2026\sz\data\cs）
-node src/make-xml.mjs --out out/komyoji-xml                        # 產生 33 個書 XML
+node src/make-xml.mjs --out out/komyoji-xml                        # 產生 00.xml＋33 個書 XML
 bun run src/pack.ts                                                # → D:\accelon3\komyoji.adb
+bun run src/toc-check.ts                                           # 目錄樹檢查
 bun run out/addr-check.mjs                                         # 地址抽查
 ```
 

@@ -44,6 +44,8 @@ if (!existsSync(SRC)) {
 const files = readdirSync(SRC).filter((f) => f.endsWith('.xml') && f !== '00.xml');
 const books = files.map((f) => f.slice(0, -4)).sort(canonOrder);
 const lines: string[] = [];
+// 檔頭（<檔> 與 <樹> 宣告）一定要在最前面，否則沒有目錄樹
+if (existsSync(join(SRC, '00.xml'))) lines.push(...readLines(join(SRC, '00.xml')));
 for (const b of books) lines.push(...readLines(join(SRC, `${b}.xml`)));
 
 const over = lines.map((l, i) => [i + 1, l.length] as const).filter(([, n]) => n * 2 > MAXLINELEN);
