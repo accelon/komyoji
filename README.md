@@ -4,10 +4,12 @@
 [`adb-converter`](../adb-converter)；光明寺網頁 → offtext 的上游在
 [`D:\2023\kmj`](file:///D:/2023/kmj)（<https://github.com/accelon/kmj>）。
 
-> **現況（2026-11-02）**：網站 4,627 章 html 已抓回並壓縮在 `data/html/`
-> （2,053 MB → 68.9 MB）。尚未開始轉檔；頁 id 規則、分層與註文處理待定。
+> **現況（2026-11-02）**：網站 4,627 章 html 已抓回並壓縮（`data/html/`，2,053 MB → 68.9 MB）；
+> 逐詞文法已抽出（765,155 個詞）；定位已對齊 sz 的 `cs.adb`（`塊.段`）；
+> **第一版 `komyoji.adb` 已產出**（33 書、156,115 行、3.29 MiB，正文是日譯）。
+> 剩下的決定：註文怎麼處理、巴利原文與文法要不要進 adb。
 
-- 成品：`D:\accelon3\komyoji.adb`（建置後才會有；不進 git）
+- 成品：`D:\accelon3\komyoji.adb`（不進 git）
 - 母工作區：`D:\2026\adb-converter`（共用工具、紀律、版本紀錄）
 - 版控：<https://github.com/accelon/komyoji>（`origin`，分支 `main`）
 
@@ -30,7 +32,7 @@
 | 路徑 | 說明 |
 |---|---|
 | `AGENTS.md` | 這一區的規則；§0 要求先讀母區的紀律文件 |
-| `src/` | 抓取（`crawl.mjs`）、驗證（`verify-html.mjs`）、逐詞文法抽取（`extract-grammar.mjs`）、轉檔／patch／pack 腳本 |
+| `src/` | 抓取（`crawl.mjs`）、驗證（`verify-html.mjs`）、文法抽取（`extract-grammar.mjs`）、cs 對位（`align-cs.mjs`）、產生 XML（`make-xml.mjs`）、打包（`pack.ts`） |
 | `data/` | 原始資料或小型對照表（唯讀；大檔不進版控） |
 | `data/html/` | 抓回來的網站原檔（`*.html.gz` 不進版控，只留 `manifest.tsv`） |
 | `docs/` | 這一庫的 steps、來源說明、限制 |
@@ -48,9 +50,9 @@
 - [x] 抓回網站 html 並壓縮（`data/html/`，4,627 章；見 `docs/crawl-log.md`）
 - [x] 抽出逐詞文法（765,155 個詞 → `out/grammar/`，副本給 sz：`D:\2026\sz\data\kmj-grammar`；
       見 `docs/grammar-extract.md`）
-- [ ] 決定頁 id 規則（本區討論；**不預設沿用 `NpMc`**；網站沒有頁錨點可用）
+- [x] 決定頁 id 規則：跟 sz 的 `cs.adb` 一樣用 `塊.段`（`src/align-cs.mjs`，見 `docs/align-cs.md`）
+- [x] 建第一版文字 → `out/komyoji-xml/` → 打包 → `D:\accelon3\komyoji.adb`
 - [ ] 決定 7,556 個只有註號、沒有註文的 `<註>` 怎麼處理（保留編號／不顯示／另行補）
-- [ ] 把來源版本、範圍、頁 id 規則寫進 `docs/steps.md`
-- [ ] 建第一版文字 → `out/` → 打包 → `D:\accelon3\komyoji.adb`
+- [ ] 決定巴利原文與逐詞文法要不要進 adb（容器形式）
 - [ ] 在母區 `deploy/adb-notes.json` 與 `docs/adb/adb-version-log.md` 記帳
 - [ ] 要發布才跑 `publish-adb.ts`（大檔加 `--allow-large`）；官網 exe release 仍由母區
