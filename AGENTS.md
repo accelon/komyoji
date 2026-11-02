@@ -29,10 +29,15 @@
 ### 1.1 現況（2026-11-02）
 
 - 工作區剛建立，尚未開始轉檔；頁 id 規則、分層與註文處理尚未定案。
-- 頁 id 規則**在本區討論後才定**，不要預設沿用 `NpMc`。
+- **網站原檔已抓回**：`data/html/<分冊>/<章名>.html.gz`，4,627 章、2,053 MB → 68.9 MB；
+  每章含巴利正文＋逐詞文法表＋`訳文`＋`ruby`。抓取紀錄 `data/html/manifest.tsv`
+  （有版控），說明見 `docs/crawl-log.md`。**`.gz` 不進版控**。
+- 重抓：`node src/crawl.mjs --out data/html`（本機需 VPN；或 push 改 `src/crawl.mjs`
+  讓 GitHub Actions 代抓——fc2 對中國 IP 是 IP 級封鎖，見 `docs/crawl-log.md`）。
+- 頁 id 規則**在本區討論後才定**，不要預設沿用 `NpMc`；網站沒有頁錨點可用。
 - 版控：<https://github.com/accelon/komyoji>（`origin`，分支 `main`；2026-11-02 由作者指定）。
-- 下一個動作：把來源版本、範圍、頁 id 規則與註文（7,556 個只有註號、沒有註文）
-  寫進 `docs/steps.md`，再依 §3 建置。
+- 下一個動作：把頁 id 規則與註文（7,556 個只有註號、沒有註文）寫進 `docs/steps.md`，
+  再依 §3 建置。
 
 ## 2. 共用程式（不要重寫一份）
 

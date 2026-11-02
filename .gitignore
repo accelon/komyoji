@@ -22,4 +22,6 @@ __pycache__/
 *.pyc
 
 # 抓回來的網站原檔（壓縮；用 src/crawl.mjs 重抓，不進版控）
-data/html/
+# manifest 很小，留下來當抓取紀錄（來源網址、sha256、大小）
+data/html/*
+!data/html/manifest.tsv

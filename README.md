@@ -4,7 +4,8 @@
 [`adb-converter`](../adb-converter)；光明寺網頁 → offtext 的上游在
 [`D:\2023\kmj`](file:///D:/2023/kmj)（<https://github.com/accelon/kmj>）。
 
-> **現況（2026-11-02）**：工作區剛建立，尚未開始轉檔。頁 id 規則、分層與註文處理待定。
+> **現況（2026-11-02）**：網站 4,627 章 html 已抓回並壓縮在 `data/html/`
+> （2,053 MB → 68.9 MB）。尚未開始轉檔；頁 id 規則、分層與註文處理待定。
 
 - 成品：`D:\accelon3\komyoji.adb`（建置後才會有；不進 git）
 - 母工作區：`D:\2026\adb-converter`（共用工具、紀律、版本紀錄）
@@ -12,6 +13,11 @@
 
 ## 來源
 
+- `data/html/<分冊>/<章名>.html.gz`（2026-11-02 抓回，Shift_JIS → UTF-8、gzip）：
+  光明寺網站的 Excel 匯出頁，每章含巴利正文、逐詞文法表（語／語根／品詞／語基／
+  性／數／格／意味）、`訳文` 與 `ruby` 注音。
+  - 4,627 章、原始 2,053 MB → gzip 68.9 MB（3.4%）；`data/html/manifest.tsv` 記 url／sha256／大小。
+  - 抓取與重抓：`src/crawl.mjs`；網路限制、分冊統計見 [`docs/crawl-log.md`](docs/crawl-log.md)。
 - `D:\2023\kmj\off`：已轉好的 offtext（`*.kmj.off`，22 書）。
 - 上游 `D:\2023\kmj`：光明寺 html → offtext 的工具（`node tidy`／`node gen`）。
 - 參考數字（母區 `docs/adb/off-to-accelon.md` §11）：
@@ -24,8 +30,9 @@
 | 路徑 | 說明 |
 |---|---|
 | `AGENTS.md` | 這一區的規則；§0 要求先讀母區的紀律文件 |
-| `src/` | 轉檔／patch／pack 腳本（建置要能從零重跑） |
-| `data/` | 原始資料或小型對照表（唯讀；大檔與 zip 不進版控） |
+| `src/` | 抓取（`crawl.mjs`）、驗證（`verify-html.mjs`）、轉檔／patch／pack 腳本 |
+| `data/` | 原始資料或小型對照表（唯讀；大檔不進版控） |
+| `data/html/` | 抓回來的網站原檔（`*.html.gz` 不進版控，只留 `manifest.tsv`） |
 | `docs/` | 這一庫的 steps、來源說明、限制 |
 | `out/` | 中間產物與測試輸出（不進版控） |
 
@@ -38,7 +45,8 @@
 
 ## 下一步
 
-- [ ] 決定頁 id 規則（本區討論；**不預設沿用 `NpMc`**）
+- [x] 抓回網站 html 並壓縮（`data/html/`，4,627 章；見 `docs/crawl-log.md`）
+- [ ] 決定頁 id 規則（本區討論；**不預設沿用 `NpMc`**；網站沒有頁錨點可用）
 - [ ] 決定 7,556 個只有註號、沒有註文的 `<註>` 怎麼處理（保留編號／不顯示／另行補）
 - [ ] 把來源版本、範圍、頁 id 規則寫進 `docs/steps.md`
 - [ ] 建第一版文字 → `out/` → 打包 → `D:\accelon3\komyoji.adb`

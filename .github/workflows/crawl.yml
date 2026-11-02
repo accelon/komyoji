@@ -2,7 +2,8 @@ name: crawl-komyoji
 
 # 光明寺教蔵（fc2）在中國網路被 IP 級封鎖，本機抓不到；
 # 用 GitHub 的 runner（海外）代抓，再以 artifact 取回。
-# 觸發：手動，或改到 src/crawl.mjs / 本檔時自動跑一次。
+# 觸發：只用手動（workflow_dispatch）。push 不自動跑，免得每次改程式都重抓 4,627 章。
+# 手動觸發見 docs/crawl-log.md §5。
 
 on:
   workflow_dispatch:
@@ -11,10 +12,6 @@ on:
         description: '只抓前 N 章（0 = 全部）'
         required: false
         default: '0'
-  push:
-    paths:
-      - 'src/crawl.mjs'
-      - '.github/workflows/crawl.yml'
 
 permissions:
   contents: read

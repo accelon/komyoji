@@ -10,7 +10,7 @@
  * 產出：
  *   <out>/<folder>/<name>.html.gz    每章一個檔（UTF-8，gzip -9）
  *   <out>/manifest.tsv               每檔一列：rel / url / status / chars / raw / gz / sha256 / anchors / title
- *   <out>/pages.tsv                  每章 → 頁錨點（dn01c05p02 這種）對照
+ *                                    （anchors 目前都是 0：網站沒有 <a name> 頁錨點，頁碼另議）
  *   <out>/menu.html                  menu.html（UTF-8，gzip）
  *
  * 每章先抓 <name>.files/sheet001.htm（Excel 匯出的正文與逐詞文法表），
@@ -68,10 +68,13 @@ const fetchRetry = async (url, tries = 4) => {
         redirect: 'follow',
         signal: AbortSignal.timeout(90_000),
       });
-      if (res.status === 404) return { status: 404, buf: Buffer.alloc(0) };
+      // 不存在時 fc2 會 302 到 error.fc2.com/web/404.html（跟隨後是 200）
+      if (res.status === 404 || /error\.fc2\.com/.test(res.url)) {
+        return { status: 404, buf: Buffer.alloc(0), url: res.url };
+      }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const buf = Buffer.from(await res.arrayBuffer());
-      return { status: res.status, buf };
+      return { status: res.status, buf, url: res.url };
     } catch (e) {
       lastErr = e;
       await sleep(1000 * Math.pow(2, i)); // 1s,2s,4s,8s
@@ -150,7 +153,6 @@ const main = async () => {
   }
 
   const manifest = [];
-  const pages = [];
   let done = 0;
   let failed = 0;
   let totalRaw = 0;
@@ -164,9 +166,6 @@ const main = async () => {
       );
     }
     fs.writeFileSync(path.join(OUT, 'manifest.tsv'), lines.join('\n') + '\n');
-    const plines = ['chapter\tanchors'];
-    for (const p of pages) plines.push([p.chapter, p.anchors.join(',')].join('\t'));
-    fs.writeFileSync(path.join(OUT, 'pages.tsv'), plines.join('\n') + '\n');
   };
 
   const worker = async (i) => {
@@ -191,7 +190,6 @@ const main = async () => {
         row.anchors = a.length;
         if (old?.url) row.url = old.url;
         if (old?.title) row.title = old.title;
-        if (a.length) pages.push({ chapter: name, anchors: a });
         row.status = 'cached';
         manifest.push(row);
         totalRaw += row.raw;
@@ -226,7 +224,6 @@ const main = async () => {
       row.sha256 = sha256(Buffer.from(html, 'utf8'));
       const a = [...html.matchAll(/<a\s+name=["']?([a-z]+\d+c\d+p\d+)["']?/gi)].map((x) => x[1]);
       row.anchors = a.length;
-      if (a.length) pages.push({ chapter: name, anchors: a });
       totalRaw += row.raw;
       totalGz += row.gz;
       manifest.push(row);
