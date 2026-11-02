@@ -137,7 +137,8 @@ node src/extract-grammar.mjs --dir data/html --out out/g1 --debug 1          # �
 
 | 檔 | 內容 |
 |---|---|
-| `pos-distribution.tsv.gz` | `word / pos / count`，55,316 列；`pos` 只有 8 個枚舉 `n v adj ptcp pron ind num other` |
+| `pos-distribution.tsv.gz` | `word / pos / count`，48,366 列（46,787 個詞形）；`pos` 只有 8 個枚舉 `n v adj ptcp pron ind num other` |
+| `pos-distribution.case.tsv.gz` | 同上，但保留大小寫（用 `form` 去標點），55,316 列／53,678 個詞形 |
 | `pos-map.tsv` | 67 種原標籤 → 8 個 canonical，附次數 |
 | `coverage.tsv` | 各部類的詞數、涵蓋的書、`complete`(yes/partial) |
 
@@ -147,9 +148,9 @@ node src/export-pos.mjs        # 約 3 秒；會自己檢查「總和＝tokens �
 
 三個要注意的地方：
 
-1. **`word` 不是 `form_clean`**。`form_clean` 是比對用的折疊鍵（去標點＋小寫＋去變音符號），
-   拿來統計會把 `Bhagavā`／`bhagavā` 併掉。這裡改用 `form` 去標點，**保留大小寫與變音符號**，
-   符合 sz 請求的「IAST 原樣」。
+1. **`word` 用 `form_clean` 原樣**（小寫、去標點、**保留變音符號**），和 sz 請求裡「form_clean 原樣」
+   一致；請求括號裡的「保留大小寫」與實際的 `form_clean` 不符（它本來就是小寫），
+   所以另外出一支 `pos-distribution.case.tsv.gz`（用 `form` 去標點，保留大小寫）供選擇。
 2. `不定`（1,184 次）對到 `other`，不是 `ind`——`不定` 不是 `不変`（不變化詞）。
    `‐`、`？`、`女`、`男`、`能`、空值等貼錯欄的標籤也一律 `other`。
 3. `coverage.tsv` 的 `tokens` 是該部類全部詞列；`complete` 只有 `kn` 是 `partial`

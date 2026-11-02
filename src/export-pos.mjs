@@ -64,10 +64,12 @@ const main = () => {
   const tk = readGz(path.join(G, 'tokens.tsv.gz'));
   const H = tk[0].split('\t');
   const iForm = H.indexOf('form');
+  const iClean = H.indexOf('form_clean');
   const iPos = H.indexOf('pos');
   const iSent = H.indexOf('sent_id');
 
-  const dist = new Map(); // word|pos → count
+  const dist = new Map(); // form_clean|pos → count（主檔，和 sz 的 form_clean 對得上）
+  const distCase = new Map(); // 保留大小寫的版本（另存，給需要大小寫的人）
   const labelCount = new Map(); // 原標籤 → count
   const folderTok = new Map(); // folder → tokens
   const folderBook = new Map(); // folder → Set(book)
@@ -75,11 +77,12 @@ const main = () => {
 
   for (const l of tk.slice(1)) {
     const c = l.split('\t');
-    const word = wordOf(c[iForm]);
+    const wordCase = wordOf(c[iForm]);
+    const word = c[iClean] || wordCase.toLowerCase();
     if (!word) continue;
     const pos = mapPos(c[iPos]);
-    const k = word + '\t' + pos;
-    dist.set(k, (dist.get(k) || 0) + 1);
+    dist.set(word + '\t' + pos, (dist.get(word + '\t' + pos) || 0) + 1);
+    distCase.set(wordCase + '\t' + pos, (distCase.get(wordCase + '\t' + pos) || 0) + 1);
     labelCount.set(c[iPos], (labelCount.get(c[iPos] || '') || 0) + 1);
     total++;
 
@@ -113,6 +116,16 @@ const main = () => {
   for (const r of rows) out.push(`${r.w}\t${r.p}\t${r.n}`);
   fs.writeFileSync(path.join(G, 'pos-distribution.tsv.gz'), zlib.gzipSync(out.join('\n') + '\n', { level: 9 }));
 
+  // ①b 同一份、但保留大小寫（form 去標點）
+  const rowsCase = [...distCase].map(([k, n]) => {
+    const [w, p] = k.split('\t');
+    return { w, p, n };
+  });
+  rowsCase.sort((a, b) => b.n - a.n);
+  const outC = ['word\tpos\tcount'];
+  for (const r of rowsCase) outC.push(`${r.w}\t${r.p}\t${r.n}`);
+  fs.writeFileSync(path.join(G, 'pos-distribution.case.tsv.gz'), zlib.gzipSync(outC.join('\n') + '\n', { level: 9 }));
+
   // ② pos-map
   const pm = ['label\tcanonical\tcount'];
   [...labelCount]
@@ -144,7 +157,8 @@ const main = () => {
   const badPos = rows.filter((r) => !CANON.has(r.p));
   const badMap = [...labelCount.keys()].filter((k) => !CANON.has(mapPos(k)));
   console.log(`詞列 ${tk.length - 1}；有效詞形 ${total}`);
-  console.log(`pos-distribution 列 ${rows.length}，count 總和 ${sumDist}`);
+  console.log(`pos-distribution 列 ${rows.length}（詞形 ${new Set(rows.map((r) => r.w)).size}），count 總和 ${sumDist}`);
+  console.log(`pos-distribution.case 列 ${rowsCase.length}（詞形 ${new Set(rowsCase.map((r) => r.w)).size}）`);
   console.log(`pos-map 標籤 ${labelCount.size} 種，count 總和 ${sumMap}`);
   console.log(`非 8 枚舉的 pos：${badPos.length}；非枚舉的 canonical：${badMap.length}`);
   console.log(`coverage：${cov.length - 1} 個分冊`);
