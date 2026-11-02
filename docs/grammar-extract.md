@@ -130,3 +130,30 @@ node src/extract-grammar.mjs --dir data/html --out out/g1 --debug 1          # �
 ```
 
 改的是「解析規則」時，記得同步更新本頁的旗標說明與 §4 的數字。
+
+## 7. 給 sz 的 stoplist 檔（`src/export-pos.mjs`）
+
+依 `D:\2026\sz\out\komyoji-request.md`（2026-11-02）另外匯出三支，放 `out/grammar/`：
+
+| 檔 | 內容 |
+|---|---|
+| `pos-distribution.tsv.gz` | `word / pos / count`，55,316 列；`pos` 只有 8 個枚舉 `n v adj ptcp pron ind num other` |
+| `pos-map.tsv` | 67 種原標籤 → 8 個 canonical，附次數 |
+| `coverage.tsv` | 各部類的詞數、涵蓋的書、`complete`(yes/partial) |
+
+```powershell
+node src/export-pos.mjs        # 約 3 秒；會自己檢查「總和＝tokens 列數」「pos 都在 8 個枚舉內」
+```
+
+三個要注意的地方：
+
+1. **`word` 不是 `form_clean`**。`form_clean` 是比對用的折疊鍵（去標點＋小寫＋去變音符號），
+   拿來統計會把 `Bhagavā`／`bhagavā` 併掉。這裡改用 `form` 去標點，**保留大小寫與變音符號**，
+   符合 sz 請求的「IAST 原樣」。
+2. `不定`（1,184 次）對到 `other`，不是 `ind`——`不定` 不是 `不変`（不變化詞）。
+   `‐`、`？`、`女`、`男`、`能`、空值等貼錯欄的標籤也一律 `other`。
+3. `coverage.tsv` 的 `tokens` 是該部類全部詞列；`complete` 只有 `kn` 是 `partial`
+   （小部只涵蓋 `bv cp dhp iti kp pv snp thag thig ud vv` 11 本），其餘四部都是 `yes`。
+
+驗收（2026-11-02 實測）：`pos-distribution` 總和 = `pos-map` 總和 = `tokens.tsv.gz` 列數
+= **765,155**；非枚舉的 `pos` 0 個。

@@ -38,6 +38,18 @@
 | `docs/` | 這一庫的 steps、來源說明、限制 |
 | `out/` | 中間產物與測試輸出（不進版控） |
 
+## 指令
+
+```powershell
+cd D:\2026\komyoji
+node src/crawl.mjs --out data/html            # 抓網站（需 VPN；或 GitHub Actions）
+node src/extract-grammar.mjs --out out/grammar # 抽逐詞文法 → sentences/tokens.tsv.gz
+node src/export-pos.mjs                        # 給 sz 的 pos-distribution／pos-map／coverage
+node src/align-cs.mjs --out out/align.tsv      # 對 cs 的 塊.段（讀 D:\2026\sz\data\cs）
+node src/make-xml.mjs --out out/komyoji-xml    # 產生書 XML
+bun run src/pack.ts                            # 打包 → D:\accelon3\komyoji.adb
+```
+
 ## 開工前先讀
 
 1. `D:\2026\adb-converter\AGENTS.md`（母區規則）
