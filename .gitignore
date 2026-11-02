@@ -20,3 +20,6 @@ raw/_zips/
 # Python
 __pycache__/
 *.pyc
+
+# 抓回來的網站原檔（壓縮；用 src/crawl.mjs 重抓，不進版控）
+data/html/
