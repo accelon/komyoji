@@ -30,7 +30,7 @@
 | 路徑 | 說明 |
 |---|---|
 | `AGENTS.md` | 這一區的規則；§0 要求先讀母區的紀律文件 |
-| `src/` | 抓取（`crawl.mjs`）、驗證（`verify-html.mjs`）、轉檔／patch／pack 腳本 |
+| `src/` | 抓取（`crawl.mjs`）、驗證（`verify-html.mjs`）、逐詞文法抽取（`extract-grammar.mjs`）、轉檔／patch／pack 腳本 |
 | `data/` | 原始資料或小型對照表（唯讀；大檔不進版控） |
 | `data/html/` | 抓回來的網站原檔（`*.html.gz` 不進版控，只留 `manifest.tsv`） |
 | `docs/` | 這一庫的 steps、來源說明、限制 |
@@ -46,6 +46,8 @@
 ## 下一步
 
 - [x] 抓回網站 html 並壓縮（`data/html/`，4,627 章；見 `docs/crawl-log.md`）
+- [x] 抽出逐詞文法（765,155 個詞 → `out/grammar/`，副本給 sz：`D:\2026\sz\data\kmj-grammar`；
+      見 `docs/grammar-extract.md`）
 - [ ] 決定頁 id 規則（本區討論；**不預設沿用 `NpMc`**；網站沒有頁錨點可用）
 - [ ] 決定 7,556 個只有註號、沒有註文的 `<註>` 怎麼處理（保留編號／不顯示／另行補）
 - [ ] 把來源版本、範圍、頁 id 規則寫進 `docs/steps.md`

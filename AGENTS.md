@@ -34,6 +34,10 @@
   （有版控），說明見 `docs/crawl-log.md`。**`.gz` 不進版控**。
 - 重抓：`node src/crawl.mjs --out data/html`（本機需 VPN；或 push 改 `src/crawl.mjs`
   讓 GitHub Actions 代抓——fc2 對中國 IP 是 IP 級封鎖，見 `docs/crawl-log.md`）。
+- **逐詞文法已抽出**：`node src/extract-grammar.mjs --dir data/html --out out/grammar`
+  → 765,155 個詞（句子＋日譯＋語根／品詞／語基／性／数／格／人称／態），
+  輸出有 `flags` 標記來源的人工錯誤；副本在 `D:\2026\sz\data\kmj-grammar`，
+  說明見 `docs/grammar-extract.md`。
 - 頁 id 規則**在本區討論後才定**，不要預設沿用 `NpMc`；網站沒有頁錨點可用。
 - 版控：<https://github.com/accelon/komyoji>（`origin`，分支 `main`；2026-11-02 由作者指定）。
 - 下一個動作：把頁 id 規則與註文（7,556 個只有註號、沒有註文）寫進 `docs/steps.md`，

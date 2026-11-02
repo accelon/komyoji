@@ -53,6 +53,7 @@
 ## 5. 待辦
 
 - [x] 把網站 html 抓回並壓縮（`src/crawl.mjs` → `data/html/*.gz`，4,627 章）
+- [x] 抽出逐詞文法（`src/extract-grammar.mjs` → 765,155 個詞；見 `grammar-extract.md`）
 - [ ] 頁 id 規則
 - [ ] 註文處理
 - [ ] 第一版轉檔腳本（`src/`）：html → adb 行（巴利／文法表／日譯）
