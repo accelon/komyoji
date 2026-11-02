@@ -1,0 +1,22 @@
+# 建置產物與中間檔
+out/*
+!out/.gitkeep
+build/
+dist/
+
+# 大型成品／下載快取
+*.adb
+*.zip
+*.7z
+data/_zips/
+raw/_zips/
+
+# 本機設定與暫存
+.local/
+*.log
+*.tmp
+.chrome-*/
+
+# Python
+__pycache__/
+*.pyc
