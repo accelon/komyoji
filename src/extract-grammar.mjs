@@ -246,6 +246,7 @@ const fold = (s) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const flatten = (units, folder, chapter) => {
   const sentences = [];
   const tokens = [];
+  const unitRecords = [];
   const stats = { units: 0, sentences: 0, unlabeled: 0, notes: 0, tokens: 0, nf: 0, sandhi: 0, compound: 0, order: 0, dup: 0, nopos: 0, badpos: 0, badgender: 0, nomeaning: 0 };
 
   units.forEach((u, i) => {
@@ -256,6 +257,19 @@ const flatten = (units, folder, chapter) => {
     else stats.notes++;
     const sentId = `${folder}/${chapter}/${i + 1}`;
     sentences.push([sentId, folder, chapter, i + 1, kind, u.label, u.pali, u.ja, u.memo]);
+    // 中間格式（JSON Lines）：巴利／日譯／注／逐詞文法表，原樣保留
+    unitRecords.push({
+      id: sentId,
+      folder,
+      chapter,
+      unit: i + 1,
+      kind,
+      label: u.label,
+      pali: u.pali,
+      ja: u.ja,
+      memo: u.memo,
+      blocks: u.blocks.map((b) => ({ kind: b.kind, phrase: b.phrase || '', rows: b.rows })),
+    });
 
     const hay = norm(u.pali);
     const hayF = fold(hay);
@@ -371,7 +385,7 @@ const flatten = (units, folder, chapter) => {
       }
     }
   });
-  return { sentences, tokens, stats };
+  return { sentences, tokens, stats, unitRecords };
 };
 const main = () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -383,6 +397,9 @@ const main = () => {
 
   const sentOut = fs.createWriteStream(path.join(OUT, 'sentences.tsv.gz'));
   const tokOut = fs.createWriteStream(path.join(OUT, 'tokens.tsv.gz'));
+  const ndOut = fs.createWriteStream(path.join(OUT, 'units.ndjson.gz'));
+  const gzN = zlib.createGzip({ level: 9 });
+  gzN.pipe(ndOut);
   const gzS = zlib.createGzip({ level: 9 });
   const gzT = zlib.createGzip({ level: 9 });
   gzS.pipe(sentOut);
@@ -413,9 +430,10 @@ const main = () => {
             );
           }
         }
-        const { sentences, tokens, stats } = flatten(units, folder, chapter);
+        const { sentences, tokens, stats, unitRecords } = flatten(units, folder, chapter);
         for (const s of sentences) gzS.write(s.join('\t').replace(/\n/g, ' ') + '\n');
         for (const t of tokens) gzT.write(t.join('\t') + '\n');
+        for (const u of unitRecords) gzN.write(JSON.stringify(u) + '\n');
         chapters.push([folder, chapter, stats.units, stats.sentences, stats.unlabeled, stats.notes, stats.tokens, stats.nf, stats.sandhi, stats.compound, stats.order, stats.dup, stats.nopos, stats.badpos, stats.badgender, stats.nomeaning, 'ok']);
         for (const k of Object.keys(total)) total[k] += stats[k];
       } catch (e) {
@@ -428,6 +446,7 @@ const main = () => {
 
   gzS.end();
   gzT.end();
+  gzN.end();
 
   const lines = [
     'folder\tchapter\tunits\tsentences\tunlabeled\tnotes\ttokens\tnf\tsandhi\tcompound\torder\tdup\tnopos\tbadpos\tbadgender\tnomeaning\tstatus',

@@ -53,19 +53,37 @@
 
 ## 3.1 整包 7z 有多大（2026-11-03 實測）
 
-工作檔仍是 `data/html/` 的逐檔 gzip（好處是可以只解一章），7z 只在要搬運／備份時用：
+工作檔仍是 `data/html/` 的逐檔 gzip（好處是可以只解一章），7z 是備份／搬運用：
 
 | 方式 | 大小 | 耗時 |
 |---|---:|---:|
 | 逐檔 gzip（現況 `data/html/`） | 68.9 MB | — |
 | 7z 非 solid（`-mx=9 -md=64m`） | 43.85 MB | 147 s |
 | 7z solid `-mx=5 -md=32m` | 29.44 MB | 19 s |
-| **7z solid `-mx=9 -md=256m`** | **24.05 MB** | 52 s |
+| 7z solid LZMA2 `-mx=9 -md=256m` | 24.05 MB | 52 s |
+| **7z solid PPMd `mem=2g:o=32`** | **21.13 MB** | 31 s |
 
-- 原始 2,053.8 MB（4,627 章＋menu），24.05 MB 等於 **1.17%**，比逐檔 gzip 小 2.9 倍。
+- 原始 2,053.8 MB（4,627 章＋menu），21.13 MB 等於 **1.0%**，比逐檔 gzip 小 3.3 倍。
+- PPMd 在這種重複度高的表格文字上比 LZMA2 好 12%，而且更快。
+- 已放上 GitHub release：
+  <https://github.com/accelon/komyoji/releases/download/html-2026-11-02/komyoji-html.7z>
+  （sha256 `1F6F00F2…EA0ED9`，22,158,296 bytes）
 - solid 版解壓要整包（不能只抽一章）；要隨機讀取就用 `-ms=off`（43.85 MB）。
-- 指令：`7z a -t7z -mx=9 -m0=lzma2 -md=256m -ms=on out\komyoji-html.7z out\html-raw\*`
+- 指令：`7z a -t7z -m0=PPMd:mem=2g:o=32 -mx=9 -ms=on out\komyoji-html.7z out\html-raw\*`
   （先把 `data/html/*.html.gz` 解到 `out/html-raw/` 再壓；直接壓 `.gz` 沒有效果。）
+- 解出來的 `out/html-raw/` 有 2 GB，用完就刪——平常的轉檔只讀 `data/html/`（69 MB）。
+
+## 3.2 去標籤的文字底稿（`out/html-clean/`）
+
+`node src/clean-html.mjs` 把每章的表格列轉成 TSV（cell 之間 Tab、ruby 保留成「漢字(かな)」，
+其餘 HTML 標籤全去掉）：4,627 章、1,705,479 列、**19.6 MB**（gzip）。
+比原始 html 小 3.5 倍，要肉眼查某章原始表格時看這份，不必解 7z。
+
+## 3.3 現在不再碰 2 GB
+
+轉檔鏈只走：`data/html/`（69 MB 逐檔 gz）→ `out/grammar/units.ndjson.gz`（17 MB 中間格式，見
+`grammar-extract.md` §8）→ `out/komyoji-xml/` → `komyoji.adb`。
+解壓後的 2 GB 只有在重壓 7z 時才短暫存在，用完即刪。
 
 ## 4. 內容長相（抽樣）
 

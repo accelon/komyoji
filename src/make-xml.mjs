@@ -54,12 +54,18 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 const main = () => {
   const { bookTitle, blockTitle } = readTitles();
 
-  const st = zlib.gunzipSync(fs.readFileSync(path.join(GRAMMAR, 'sentences.tsv.gz'))).toString('utf8').split('\n').filter(Boolean);
+  // 中間格式（JSON Lines）：每行一個單元，含巴利／日譯／注／逐詞文法表。
+  // XML 只從這裡長出來，不再回頭碰 data/html 的 2 GB 原始頁。
+  const nd = zlib.gunzipSync(fs.readFileSync(path.join(GRAMMAR, 'units.ndjson.gz'))).toString('utf8');
   const sent = new Map();
-  for (const l of st.slice(1)) {
-    const c = l.split('\t');
-    sent.set(c[0], { kind: c[4], ja: c[7], pali: c[6] });
+  let units = 0;
+  for (const line of nd.split('\n')) {
+    if (!line) continue;
+    const u = JSON.parse(line);
+    sent.set(u.id, { kind: u.kind, ja: u.ja, pali: u.pali, memos: u.memo });
+    units++;
   }
+  console.log(`中間格式單元 ${units}`);
 
   const al = fs.readFileSync(ALIGN, 'utf8').split('\n').filter(Boolean).slice(1).map((l) => l.split('\t'));
 

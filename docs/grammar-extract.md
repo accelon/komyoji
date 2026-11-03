@@ -158,3 +158,51 @@ node src/export-pos.mjs        # 約 3 秒；會自己檢查「總和＝tokens �
 
 驗收（2026-11-02 實測）：`pos-distribution` 總和 = `pos-map` 總和 = `tokens.tsv.gz` 列數
 = **765,155**；非枚舉的 `pos` 0 個。
+
+## 8. 中間格式：`out/grammar/units.ndjson.gz`
+
+這是**建 adb 的唯一來源**，之後的作業都從這裡長，不再回頭吃 2 GB 的原始 html。
+
+- 一個單元一行（JSON Lines，UTF-8、gzip），共 **172,355 行、17.0 MB**。
+- 每行就是原始表格的一個「句子區塊」：巴利原文、日譯、注、以及整張逐詞文法表。
+
+```json
+{
+  "id": "an/an01c03/24",
+  "folder": "an",
+  "chapter": "an01c03",
+  "unit": 24,
+  "kind": "sentence",
+  "label": "28-1.",
+  "pali": "28. ‘‘Atthi, bhikkhave, aññeva dhammā gambhīrā duddasā …",
+  "ja": "比丘たちよ、じつに深く、見がたく…",
+  "memo": "・梵語語根 kḷp 由来の語は…",
+  "blocks": [
+    {
+      "kind": "nom",
+      "phrase": "",
+      "rows": [["Pubba", "", "形", "代的", "‐", "持", "", "先、前、昔の"]]
+    },
+    {
+      "kind": "pred",
+      "phrase": "",
+      "rows": [["atthi", "as", "動", "現", "能", "単", "三", "ある"]]
+    }
+  ]
+}
+```
+
+- `kind`：`sentence`（有段號）／`unlabeled`（無段號但有詞表）／`note`（只有文字，沒有詞表）。
+- `blocks[].kind`：`nom`＝`語/語根/品詞/語基/性/数/格/意味`；`pred`＝`述語/語根/品詞/活用/態/数/人称/意味`。
+- `rows` 的 8 個欄位照原表順序，**值一字不改**（含 `‐`、空白、貼錯欄的內容）。
+- `memo` 就是 `メモ`（注）；來源的 `ruby` 序音不在這裡（要的話看 `out/html-clean/` 或 7z）。
+
+消費方式：
+
+| 誰 | 怎麼用 |
+|---|---|
+| `src/make-xml.mjs` | 讀 `units.ndjson.gz` ＋ `out/align.tsv` → 產生 `out/komyoji-xml/*.xml` |
+| `src/export-pos.mjs` | 改讀 `tokens.tsv.gz`（同一批資料的攤平版，給 sz） |
+| sz | `tokens.tsv.gz`／`sentences.tsv.gz`（`D:\2026\sz\data\kmj-grammar`） |
+
+重跑：`node src/extract-grammar.mjs --dir data/html --out out/grammar`（約 37 秒，含 NDJSON）。

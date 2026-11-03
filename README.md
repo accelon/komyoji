@@ -43,13 +43,21 @@
 ```powershell
 cd D:\2026\komyoji
 node src/crawl.mjs --out data/html            # 抓網站（需 VPN；或 GitHub Actions）
-node src/extract-grammar.mjs --out out/grammar # 抽逐詞文法 → sentences/tokens.tsv.gz
+node src/extract-grammar.mjs --out out/grammar # 抽逐詞文法 → units.ndjson.gz（中間格式）＋ TSV
 node src/export-pos.mjs                        # 給 sz 的 pos-distribution／pos-map／coverage
 node src/align-cs.mjs --out out/align.tsv      # 對 cs 的 塊.段（讀 D:\2026\sz\data\cs）
-node src/make-xml.mjs --out out/komyoji-xml    # 產生 00.xml（目錄樹）＋書 XML
+node src/make-xml.mjs --out out/komyoji-xml    # 只讀 NDJSON＋align，產生 00.xml＋書 XML
 bun run src/pack.ts                            # 打包 → D:\accelon3\komyoji.adb
 bun run src/toc-check.ts                       # 目錄樹檢查（5 區／33 書／381 塊）
+node src/clean-html.mjs                        # 去標籤的文字底稿 → out/html-clean/（19.6 MB）
 ```
+
+- **中間格式**：`out/grammar/units.ndjson.gz`（172,355 行、17 MB），一行一個句子區塊，
+  含巴利／日譯／注／逐詞文法表；`make-xml.mjs` 只吃這個，不再回頭讀 `data/html`。
+  格式見 [`docs/grammar-extract.md`](docs/grammar-extract.md) §8。
+- **原始 html**：`data/html/`（逐檔 gzip，68.9 MB）是工作檔；整包 7z（PPMd，21.13 MB）
+  放在 GitHub release：<https://github.com/accelon/komyoji/releases/tag/html-2026-11-02>。
+  解壓後的 2 GB 只在重壓 7z 時短暫出現，用完就刪。
 
 ## 開工前先讀
 
