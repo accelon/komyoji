@@ -50,6 +50,8 @@ node src/make-xml.mjs --out out/komyoji-xml    # 只讀 NDJSON＋align，產生 
 bun run src/pack.ts                            # 打包 → D:\accelon3\komyoji.adb
 bun run src/toc-check.ts                       # 目錄樹檢查（5 區／33 書／381 塊）
 node src/clean-html.mjs                        # 去標籤的文字底稿 → out/html-clean/（19.6 MB）
+node src/infer-grammar.mjs --addr d1.28        # 查一句的逐詞文法（人工／推定自動分流）
+node src/coverage-report.mjs                   # 人工覆蓋率（四部合計 92.8%）
 ```
 
 - **中間格式**：`out/grammar/units.ndjson.gz`（172,355 行、17 MB），一行一個句子區塊，

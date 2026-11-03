@@ -43,3 +43,5 @@
 - 在 accelon26 開一個「文法」分頁：用 `塊.段:句` 查這一行的逐詞表
   （容器形式參考 `glossary`，不擠正文）。
 - 把 `units.ndjson.gz` 當成對外釋出的資料集（不只是建置中間檔）。
+- 四部以外的經文走「計算推定」，**必須標示非人工**：界線、規則與工具見
+  [`grammar-inference.md`](grammar-inference.md)。
